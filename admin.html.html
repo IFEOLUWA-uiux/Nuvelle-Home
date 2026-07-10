@@ -1,0 +1,1013 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Nuvelle Home Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Poppins:wght@300;400;500;600&family=Space+Grotesk:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root {
+      --paper: #fffdf9;
+      --linen: #f4f0e8;
+      --white: #ffffff;
+      --ink: #24221f;
+      --muted: #6f6a62;
+      --olive: #314034;
+      --olive-2: #425744;
+      --gold: #b69a5b;
+      --line: rgba(36,34,31,.15);
+      --danger: #b84a4a;
+      --success: #3d8060;
+      --warning: #a66b24;
+      --shadow: 0 22px 70px rgba(36,34,31,.12);
+      --serif: "Playfair Display", Georgia, serif;
+      --sans: "Poppins", Arial, sans-serif;
+      --wide: "Space Grotesk", Arial, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { margin: 0; background: var(--linen); color: var(--ink); font-family: var(--sans); line-height: 1.5; }
+    button, input, select, textarea { font: inherit; }
+    button { cursor: pointer; }
+    img { max-width: 100%; display: block; }
+    a { color: inherit; }
+    .hidden { display: none !important; }
+    .label { color: var(--gold); font-family: var(--wide); font-size: 11px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; }
+    .muted { color: var(--muted); font-size: 13px; }
+    .brand-mark { width: 70px; height: 50px; border: 3px double var(--olive); border-radius: 50%; display: grid; place-items: center; color: var(--olive); background: #f7f4ee; font-family: var(--serif); font-size: 22px; font-weight: 700; }
+    .btn { min-height: 42px; border: 1px solid var(--line); background: var(--white); color: var(--ink); padding: 0 16px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-family: var(--wide); font-size: 12px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; transition: .18s ease; }
+    .btn:hover { border-color: var(--olive); color: var(--olive); }
+    .btn-primary { background: var(--olive); border-color: var(--olive); color: var(--white); }
+    .btn-primary:hover { background: var(--ink); border-color: var(--ink); color: var(--white); }
+    .btn-danger { border-color: rgba(184,74,74,.34); color: var(--danger); }
+    .btn-icon { width: 42px; padding: 0; }
+    .login { min-height: 100vh; display: grid; grid-template-columns: minmax(0, 1fr) 430px; }
+    .login-visual { position: relative; background: url("https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?w=1600&q=85") center/cover; }
+    .login-visual::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(0,0,0,.52), rgba(0,0,0,.12)); }
+    .login-copy { position: absolute; left: min(8vw, 88px); bottom: min(9vw, 96px); z-index: 1; color: #fff; width: min(540px, calc(100% - 60px)); }
+    .login-copy h1 { font-family: var(--serif); font-size: clamp(46px, 6vw, 78px); line-height: .98; margin: 10px 0 16px; }
+    .login-copy p { color: rgba(255,255,255,.82); max-width: 480px; }
+    .login-panel { background: var(--paper); display: grid; place-items: center; padding: 30px; border-left: 1px solid var(--line); }
+    .login-card { width: 100%; max-width: 350px; }
+    .login-brand { display: flex; align-items: center; gap: 14px; margin-bottom: 34px; }
+    .login-brand strong { display: block; font-family: var(--serif); font-size: 30px; line-height: 1; }
+    .login-brand span { display: block; margin-top: 5px; color: var(--muted); font-family: var(--wide); font-size: 10px; letter-spacing: .16em; text-transform: uppercase; }
+    .shell { min-height: 100vh; display: grid; grid-template-columns: 252px minmax(0, 1fr); }
+    .sidebar { background: var(--paper); border-right: 1px solid var(--line); padding: 24px 18px; position: sticky; top: 0; height: 100vh; display: flex; flex-direction: column; }
+    .sidebar-head { display: flex; align-items: center; gap: 12px; padding: 4px 4px 22px; border-bottom: 1px solid var(--line); margin-bottom: 18px; }
+    .sidebar-head strong { font-family: var(--serif); font-size: 25px; line-height: 1; }
+    .sidebar-head span { color: var(--muted); font-family: var(--wide); font-size: 9px; letter-spacing: .15em; text-transform: uppercase; }
+    .nav { display: grid; gap: 6px; }
+    .nav button { border: 0; background: transparent; color: var(--muted); display: flex; align-items: center; gap: 10px; min-height: 42px; padding: 0 12px; text-align: left; font-weight: 500; }
+    .nav button svg { width: 18px; height: 18px; stroke: currentColor; stroke-width: 1.8; fill: none; }
+    .nav button.active, .nav button:hover { background: #fff; color: var(--olive); box-shadow: inset 3px 0 0 var(--gold); }
+    .sidebar-foot { margin-top: auto; border-top: 1px solid var(--line); padding-top: 18px; display: grid; gap: 10px; }
+    .main { min-width: 0; }
+    .topbar { height: 72px; background: rgba(255,253,249,.9); backdrop-filter: blur(14px); border-bottom: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 0 34px; position: sticky; top: 0; z-index: 20; }
+    .topbar h1 { font-family: var(--serif); font-size: 30px; margin: 0; }
+    .top-actions { display: flex; align-items: center; gap: 10px; }
+    .avatar { width: 38px; height: 38px; display: grid; place-items: center; background: var(--olive); color: white; font-family: var(--wide); font-weight: 700; }
+    .content { padding: 32px; }
+    .page { display: none; }
+    .page.active { display: block; }
+    .hero-row { display: grid; grid-template-columns: minmax(0, 1fr) 330px; gap: 18px; margin-bottom: 22px; }
+    .panel { background: var(--paper); border: 1px solid var(--line); padding: 24px; }
+    .panel h2, .panel h3 { margin: 0; font-family: var(--serif); }
+    .panel h2 { font-size: clamp(30px, 4vw, 52px); line-height: 1.04; margin-top: 8px; }
+    .panel h3 { font-size: 23px; }
+    .launch-list { display: grid; gap: 12px; margin-top: 18px; }
+    .launch-item { display: grid; grid-template-columns: 32px 1fr auto; gap: 12px; align-items: center; border-top: 1px solid var(--line); padding-top: 12px; }
+    .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--warning); justify-self: center; }
+    .dot.good { background: var(--success); }
+    .dot.bad { background: var(--danger); }
+    .stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin-bottom: 22px; }
+    .stat { background: var(--paper); border: 1px solid var(--line); padding: 20px; }
+    .stat span { color: var(--muted); font-family: var(--wide); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; }
+    .stat strong { display: block; font-family: var(--serif); font-size: 38px; line-height: 1; margin-top: 8px; }
+    .toolbar { display: grid; grid-template-columns: minmax(0, 1fr) 210px auto; gap: 10px; margin-bottom: 14px; }
+    .field { width: 100%; min-height: 44px; border: 1px solid var(--line); background: #fff; color: var(--ink); padding: 0 12px; outline: none; }
+    textarea.field { min-height: 112px; padding: 12px; resize: vertical; }
+    .field:focus { border-color: var(--gold); }
+    .table-wrap { background: var(--paper); border: 1px solid var(--line); overflow: auto; }
+    table { width: 100%; border-collapse: collapse; min-width: 760px; }
+    th { background: #f7f4ee; color: var(--muted); font-family: var(--wide); font-size: 11px; letter-spacing: .08em; text-align: left; text-transform: uppercase; padding: 13px 14px; }
+    td { border-top: 1px solid var(--line); padding: 14px; font-size: 13px; vertical-align: middle; }
+    tr:hover td { background: rgba(255,255,255,.55); }
+    .thumb { width: 58px; height: 48px; object-fit: cover; background: #ddd; border: 1px solid var(--line); }
+    .sku { font-family: var(--wide); color: var(--muted); font-size: 12px; }
+    .status { display: inline-flex; align-items: center; gap: 6px; min-height: 24px; padding: 0 9px; border: 1px solid var(--line); background: #fff; font-size: 11px; font-weight: 600; }
+    .status.published { color: var(--success); border-color: rgba(61,128,96,.28); }
+    .status.draft { color: var(--warning); border-color: rgba(166,107,36,.28); }
+    .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+    .form-wide { grid-column: 1 / -1; }
+    label { display: grid; gap: 7px; color: var(--muted); font-family: var(--wide); font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; }
+    .checks { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 3px; }
+    .checks label { display: flex; align-items: center; gap: 8px; color: var(--ink); font-family: var(--sans); font-size: 13px; letter-spacing: 0; text-transform: none; }
+    .form-actions { display: flex; flex-wrap: wrap; gap: 10px; border-top: 1px solid var(--line); margin-top: 20px; padding-top: 20px; }
+    .upload-tools { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 4px 0 18px; }
+    .upload-box { border: 1px solid var(--line); background: #fff; padding: 14px; display: grid; gap: 8px; }
+    .upload-box strong { font-family: var(--wide); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; }
+    .upload-box input { width: 100%; font-size: 12px; color: var(--muted); }
+    .upload-status { min-height: 18px; color: var(--muted); font-size: 12px; }
+    .setup-callout { border: 1px solid rgba(166,107,36,.28); background: #fff7eb; color: var(--warning); padding: 14px 16px; margin-bottom: 18px; display: none; }
+    .setup-callout.show { display: block; }
+    .setup-callout strong { color: var(--ink); display: block; margin-bottom: 4px; }
+    .setup-callout.danger { border-color: rgba(184,74,74,.32); background: #fff1f1; color: var(--danger); }
+    .media-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+    .media-card { background: #fff; border: 1px solid var(--line); overflow: hidden; }
+    .media-card img, .media-card video { width: 100%; height: 150px; object-fit: cover; background: #ddd; }
+    .media-card div { padding: 12px; }
+    .empty { padding: 42px; text-align: center; color: var(--muted); }
+    .toast { position: fixed; right: 24px; bottom: 24px; background: var(--ink); color: white; padding: 13px 18px; z-index: 100; transform: translateY(16px); opacity: 0; pointer-events: none; transition: .18s ease; }
+    .toast.show { transform: translateY(0); opacity: 1; }
+    .toast.error { background: var(--danger); }
+    @media (max-width: 1050px) {
+      .login { grid-template-columns: 1fr; }
+      .login-visual { min-height: 360px; }
+      .shell { grid-template-columns: 1fr; }
+      .sidebar { position: static; height: auto; }
+      .nav { grid-template-columns: repeat(3, 1fr); }
+      .topbar { padding: 0 18px; }
+      .hero-row, .stats, .form-grid, .media-grid, .upload-tools { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 680px) {
+      .content { padding: 18px; }
+      .topbar { height: auto; min-height: 68px; align-items: flex-start; flex-direction: column; padding-block: 14px; }
+      .nav, .hero-row, .stats, .toolbar, .form-grid, .media-grid, .upload-tools { grid-template-columns: 1fr; }
+      .launch-item { grid-template-columns: 24px 1fr; }
+      .launch-item .status { grid-column: 2; width: max-content; }
+    }
+  </style>
+</head>
+<body>
+  <section class="login" id="loginScreen">
+    <div class="login-visual">
+      <div class="login-copy">
+        <span class="label" style="color:#e8d5b7">Nuvelle Home</span>
+        <h1>Store control for Axel.</h1>
+        <p>Manage products, media, stock visibility, customer orders, and customer care from one place.</p>
+      </div>
+    </div>
+    <div class="login-panel">
+      <form class="login-card" id="loginForm">
+        <div class="login-brand">
+          <div class="brand-mark">NH</div>
+          <div><strong>Nuvelle</strong><span>Furniture & Interiors</span></div>
+        </div>
+        <div id="loginError" class="hidden" style="margin-bottom:14px;color:var(--danger);font-size:13px"></div>
+        <label>Email <input class="field" id="loginEmail" type="email" value="nuvellehomedecor@gmail.com" autocomplete="username"></label>
+        <div style="height:14px"></div>
+        <label>Password <input class="field" id="loginPassword" type="password" autocomplete="current-password"></label>
+        <div style="height:18px"></div>
+        <button class="btn btn-primary" type="submit" style="width:100%">Sign In</button>
+        <p class="muted">Use a Supabase Auth user. Do not publish a default password on the live page.</p>
+      </form>
+    </div>
+  </section>
+
+  <section class="shell hidden" id="appShell">
+    <aside class="sidebar">
+      <div class="sidebar-head">
+        <div class="brand-mark">NH</div>
+        <div><strong>Nuvelle</strong><span>Admin Studio</span></div>
+      </div>
+      <nav class="nav" id="nav">
+        <button class="active" data-page="dashboard"><svg viewBox="0 0 24 24"><path d="M4 13h6V4H4v9Zm10 7h6V4h-6v16ZM4 20h6v-5H4v5Z"/></svg>Dashboard</button>
+        <button data-page="products"><svg viewBox="0 0 24 24"><path d="m12 3 8 4.5v9L12 21l-8-4.5v-9L12 3Z"/><path d="m4.5 8 7.5 4.2L19.5 8M12 21v-8.8"/></svg>Products</button>
+        <button data-page="media"><svg viewBox="0 0 24 24"><path d="M4 5h16v14H4V5Z"/><path d="m4 15 4-4 4 4 3-3 5 5"/><path d="M15 9h.01"/></svg>Media</button>
+        <button data-page="journal"><svg viewBox="0 0 24 24"><path d="M5 4h14v16H5V4Z"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>Journal</button>
+        <button data-page="orders"><svg viewBox="0 0 24 24"><path d="M7 3h10l2 4v14H5V7l2-4Z"/><path d="M7 7h10M9 12h6M9 16h6"/></svg>Orders</button>
+        <button data-page="customers"><svg viewBox="0 0 24 24"><path d="M16 11a4 4 0 1 0-8 0"/><path d="M5 21a7 7 0 0 1 14 0"/><path d="M18 8a3 3 0 0 1 3 3M3 11a3 3 0 0 1 3-3"/></svg>Customers</button>
+        <button data-page="settings"><svg viewBox="0 0 24 24"><path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-2.1 3.6-.2-.1a1.7 1.7 0 0 0-1.9-.2 1.7 1.7 0 0 0-1 1.5V22H9.4v-.2a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.9.2l-.2.1L4.2 17l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3V10h.1a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1 2.1-3.6.2.1a1.7 1.7 0 0 0 1.9.2 1.7 1.7 0 0 0 1-1.5V2h5.2v.2a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.2l.2-.1L19.8 7l-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.5 1h.1v4h-.1a1.7 1.7 0 0 0-1.5 1Z"/></svg>Settings</button>
+      </nav>
+      <div class="sidebar-foot">
+        <div class="muted" id="userEmail">Not signed in</div>
+        <button class="btn" id="logoutBtn">Logout</button>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div><span class="label">Nuvelle Home</span><h1 id="pageTitle">Dashboard</h1></div>
+        <div class="top-actions">
+          <button class="btn" id="refreshBtn">Refresh</button>
+          <button class="btn btn-primary" data-open-product>New Product</button>
+          <div class="avatar">A</div>
+        </div>
+      </header>
+
+      <div class="content">
+        <section class="page active" id="page-dashboard">
+          <div class="hero-row">
+            <div class="panel">
+              <span class="label">Launch Readiness</span>
+              <h2>Keep the admin aligned with the storefront.</h2>
+              <p class="muted">This admin uses the same showroom palette, typography, department structure, and product fields needed by the customer store.</p>
+              <div class="launch-list" id="launchList"></div>
+            </div>
+            <div class="panel">
+              <span class="label">Quick Actions</span>
+              <div style="display:grid;gap:10px;margin-top:16px">
+                <button class="btn btn-primary" data-open-product>Add Product</button>
+                <button class="btn" data-page-shortcut="media">Review Media</button>
+                <button class="btn" data-page-shortcut="orders">Check Orders</button>
+                <button class="btn" id="exportBtn">Export Products CSV</button>
+              </div>
+            </div>
+          </div>
+          <div class="stats">
+            <div class="stat"><span>Products</span><strong id="statProducts">0</strong><p class="muted">Catalog rows</p></div>
+            <div class="stat"><span>Published</span><strong id="statPublished">0</strong><p class="muted">Visible in store</p></div>
+            <div class="stat"><span>Orders</span><strong id="statOrders">0</strong><p class="muted">All time</p></div>
+            <div class="stat"><span>Revenue</span><strong id="statRevenue">$0</strong><p class="muted">Recorded orders</p></div>
+          </div>
+          <div class="panel">
+            <span class="label">Recent Products</span>
+            <div id="recentProducts" style="margin-top:14px"></div>
+          </div>
+        </section>
+
+        <section class="page" id="page-products">
+          <div class="setup-callout" id="productsSetupNotice">
+            <strong>Product status</strong>
+            <span id="productsSetupMessage">Checking products...</span>
+          </div>
+          <div class="toolbar">
+            <input class="field" id="productSearch" placeholder="Search by name, SKU, material, or delivery">
+            <select class="field" id="categoryFilter"></select>
+            <button class="btn btn-primary" data-open-product>Add New</button>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Image</th><th>Product</th><th>Price</th><th>Category</th><th>Status</th><th>Actions</th></tr></thead>
+              <tbody id="productsBody"></tbody>
+            </table>
+          </div>
+          <p class="muted" id="productsCount"></p>
+        </section>
+
+        <section class="page" id="page-media">
+          <div class="hero-row">
+            <div class="panel">
+              <span class="label">Images & Video</span>
+              <h2>Prepare every storefront asset before going live.</h2>
+              <p class="muted">The store should read product image URLs, gallery images, and optional video URLs from Supabase instead of hard-coded arrays.</p>
+            </div>
+            <div class="panel">
+              <span class="label">Media Rules</span>
+              <p class="muted">Use square or 4:3 product photos, one hero image per product, optional gallery URLs separated by commas, and one video URL for featured motion.</p>
+            </div>
+          </div>
+          <div class="media-grid" id="mediaGrid"></div>
+        </section>
+
+        <section class="page" id="page-journal">
+          <div class="hero-row">
+            <div class="panel">
+              <span class="label">The Nuvelle Journal</span>
+              <h2>Editorial stories for the storefront.</h2>
+              <p class="muted">Create long-form room stories with a hero image, extra article images, and paragraph sections. Published posts appear in the homepage carousel.</p>
+            </div>
+            <div class="panel">
+              <span class="label">Quick Action</span>
+              <div style="display:grid;gap:10px;margin-top:16px">
+                <button class="btn btn-primary" id="newJournalBtn">New Journal Post</button>
+                <button class="btn" id="refreshJournalBtn">Refresh Posts</button>
+              </div>
+            </div>
+          </div>
+          <div class="setup-callout" id="journalSetupNotice">
+            <strong>Journal setup needed</strong>
+            <span id="journalSetupMessage">Run the setup SQL once in Supabase so journal posts and uploads can save.</span>
+          </div>
+          <div class="panel" id="journalFormPanel" style="display:none;margin-bottom:18px">
+            <span class="label" id="journalFormMode">New Journal</span>
+            <div class="form-grid" style="margin-top:16px">
+              <input type="hidden" id="jId">
+              <label>Title <input class="field" id="jTitle"></label>
+              <label>Label / Date <input class="field" id="jLabel"></label>
+              <label>Slug <input class="field" id="jSlug"></label>
+              <label>Sort Order <input class="field" id="jSort" type="number" value="1"></label>
+              <label class="form-wide">Excerpt <textarea class="field" id="jExcerpt"></textarea></label>
+              <label class="form-wide">Hero Image URL <input class="field" id="jHero"></label>
+              <div class="form-wide upload-box">
+                <strong>Upload Journal Hero</strong>
+                <input id="jHeroUpload" type="file" accept="image/*">
+                <span class="upload-status" id="jHeroUploadStatus">Sets the article card and article hero image.</span>
+              </div>
+              <label class="form-wide">Article Image URLs <input class="field" id="jImages"></label>
+              <div class="form-wide upload-box">
+                <strong>Upload Article Images</strong>
+                <input id="jImagesUpload" type="file" accept="image/*" multiple>
+                <span class="upload-status" id="jImagesUploadStatus">Adds images between article paragraphs.</span>
+              </div>
+              <label class="form-wide">Article Sections <textarea class="field" id="jSections" placeholder="Write one paragraph or section per line. Images will appear between sections."></textarea></label>
+            </div>
+            <div class="checks"><label><input type="checkbox" id="jPublished" checked> Published</label></div>
+            <div class="form-actions"><button class="btn btn-primary" id="saveJournalBtn">Save Journal</button><button class="btn" id="cancelJournalBtn">Cancel</button></div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Post</th><th>Label</th><th>Status</th><th>Actions</th></tr></thead>
+              <tbody id="journalBody"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="page" id="page-orders">
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Order</th><th>Customer</th><th>Total</th><th>Status</th><th>Date</th></tr></thead>
+              <tbody id="ordersBody"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="page" id="page-customers">
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Name</th><th>Email</th><th>Orders</th><th>Total Spend</th></tr></thead>
+              <tbody id="customersBody"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="page" id="page-settings">
+          <div class="panel">
+            <span class="label">Store Profile</span>
+            <div class="form-grid" style="margin-top:16px">
+              <label>Store Name <input class="field" id="storeName" value="Nuvelle Home"></label>
+              <label>Support Email <input class="field" id="storeEmail" value="nuvellehomedecor@gmail.com"></label>
+              <label>Phone <input class="field" id="storePhone" value="+1 (870) 194-0214"></label>
+              <label>Location <input class="field" id="storeLocation" value="801 Brickell Ave #1350, Miami, FL 33131, United States"></label>
+              <label class="form-wide">Homepage Video URL <input class="field" id="storeVideo"></label>
+            </div>
+            <div class="form-actions"><button class="btn btn-primary" id="saveSettingsBtn">Save Local Settings</button></div>
+          </div>
+          <div class="panel" style="margin-top:18px">
+            <span class="label">Storefront Images</span>
+            <h2>Change every visible store image.</h2>
+            <p class="muted">Upload an image or video here, then save it for the customer store.</p>
+            <div class="media-grid" style="margin-top:18px" id="siteAssetGrid"></div>
+          </div>
+        </section>
+
+        <section class="page" id="page-product-form">
+          <div class="panel">
+            <span class="label" id="formMode">New Product</span>
+            <h2 id="formHeading">Add Product</h2>
+            <div class="form-grid" style="margin-top:20px">
+              <input type="hidden" id="fId">
+              <label>SKU <input class="field" id="fSku"></label>
+              <label>Price <input class="field" id="fPrice" type="number" min="0" step="1"></label>
+              <label class="form-wide">Product Name <input class="field" id="fName"></label>
+              <label>Category <select class="field" id="fCategory"></select></label>
+              <label>Delivery <input class="field" id="fDelivery"></label>
+              <label>Materials <input class="field" id="fMaterials"></label>
+              <label>Dimensions <input class="field" id="fDimensions"></label>
+              <label>Colors <input class="field" id="fColors"></label>
+              <label>Features <input class="field" id="fFeatures"></label>
+              <label class="form-wide">Hero Image URL <input class="field" id="fImage"></label>
+              <label class="form-wide">Gallery Image URLs <input class="field" id="fGallery"></label>
+              <label class="form-wide">Video URL <input class="field" id="fVideo"></label>
+              <div class="form-wide upload-tools">
+                <div class="upload-box">
+                  <strong>Upload Hero Image</strong>
+                  <input id="heroUpload" type="file" accept="image/*">
+                  <span class="upload-status" id="heroUploadStatus">Sets the main store image.</span>
+                </div>
+                <div class="upload-box">
+                  <strong>Upload Gallery Images</strong>
+                  <input id="galleryUpload" type="file" accept="image/*" multiple>
+                  <span class="upload-status" id="galleryUploadStatus">Adds extra images to the product.</span>
+                </div>
+                <div class="upload-box">
+                  <strong>Upload Product Video</strong>
+                  <input id="videoUpload" type="file" accept="video/*">
+                  <span class="upload-status" id="videoUploadStatus">Sets the optional video URL.</span>
+                </div>
+              </div>
+              <label class="form-wide">Description <textarea class="field" id="fDescription"></textarea></label>
+            </div>
+            <div class="checks">
+              <label><input type="checkbox" id="fInStock" checked> In stock</label>
+              <label><input type="checkbox" id="fFeatured"> Featured</label>
+              <label><input type="checkbox" id="fPublished" checked> Published</label>
+            </div>
+            <div class="form-actions">
+              <button class="btn btn-primary" id="saveProductBtn">Save Product</button>
+              <button class="btn" id="cancelProductBtn">Cancel</button>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+  </section>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const SUPABASE_URL = "https://znneeejbsiajdkvghnpf.supabase.co";
+    const SUPABASE_ANON = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpubmVlZWpic2lhamRrdmdobnBmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkzOTg0ODQsImV4cCI6MjA5NDk3NDQ4NH0.ywj3SQjpe-qFZd48KL9Svj3HmDOJnSVKlfD2erXgmzQ";
+    const STORAGE_BUCKET = "product-media";
+    const sb = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON) : null;
+    const categories = [
+      ["all", "All Categories"],
+      ["living-room", "Living Room"],
+      ["dining-room", "Dining Room"],
+      ["dining-sets", "Dining Sets"],
+      ["dining-chairs", "Dining Chairs"],
+      ["coffee-side-tables", "Coffee & Side Tables"],
+      ["office-furniture", "Office Furniture"],
+      ["bedroom-furniture", "Bedroom Furniture"],
+      ["lighting-decor", "Lighting & Decor"],
+      ["outdoor", "Outdoor"]
+    ];
+    const siteAssetFields = [
+      ["hero_image", "Homepage Hero Image", "image/*"],
+      ["hero_video_1", "Hero Video 1", "video/*"],
+      ["hero_video_2", "Hero Video 2", "video/*"],
+      ["hero_video_3", "Hero Video 3", "video/*"],
+      ["hero_video_4", "Hero Video 4", "video/*"],
+      ["hero_video_5", "Hero Video 5", "video/*"],
+      ["homepage_video_poster", "Homepage Video Poster", "image/*"],
+      ["story_image", "Story Section Image", "image/*"],
+      ["feed_1", "Feed Image 1", "image/*"],
+      ["feed_2", "Feed Image 2", "image/*"],
+      ["feed_3", "Feed Image 3", "image/*"],
+      ["feed_4", "Feed Image 4", "image/*"],
+      ["category_living-room", "Category: Living Room", "image/*"],
+      ["category_dining-room", "Category: Dining Room", "image/*"],
+      ["category_dining-sets", "Category: Dining Sets", "image/*"],
+      ["category_dining-chairs", "Category: Dining Chairs", "image/*"],
+      ["category_coffee-side-tables", "Category: Coffee & Side Tables", "image/*"],
+      ["category_office-furniture", "Category: Office Furniture", "image/*"],
+      ["category_bedroom-furniture", "Category: Bedroom Furniture", "image/*"]
+    ];
+    const state = { products: [], orders: [], customers: [], journals: [], page: "dashboard", search: "", category: "all" };
+    const $ = (id) => document.getElementById(id);
+    const money = (value) => "$" + Number(value || 0).toLocaleString();
+    const slugify = (value) => String(value || "").toLowerCase().replace(/&/g, "and").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "item";
+    const asArray = (value) => Array.isArray(value) ? value : String(value || "").split(",").map(v => v.trim()).filter(Boolean);
+    const categoryLabel = (value) => (categories.find(c => c[0] === value || c[1] === value) || [value, value || "-"])[1];
+    const normalizeCategory = (value) => {
+      const found = categories.find(c => c[0] === value || c[1] === value);
+      return found ? found[0] : (value || "living-room");
+    };
+    function escapeHtml(value) {
+      return String(value ?? "").replace(/[&<>"']/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]));
+    }
+    function showToast(message, isError = false) {
+      const toast = $("toast");
+      toast.textContent = message;
+      toast.className = "toast show" + (isError ? " error" : "");
+      setTimeout(() => toast.className = "toast", 2600);
+    }
+    function setUploadStatus(id, message) {
+      const el = $(id);
+      if (el) el.textContent = message;
+    }
+    function setupSqlMessage(error, area = "this feature") {
+      const text = String(error?.message || error || "").toLowerCase();
+      if (text.includes("schema cache")) {
+        return `Supabase can see the table in the dashboard, but the API schema cache has not refreshed for ${area}. In SQL Editor, run: notify pgrst, 'reload schema'; then hard refresh this admin page.`;
+      }
+      if (text.includes("journal_posts") || text.includes("site_assets") || text.includes("relation")) {
+        return `Supabase is missing a required table for ${area}. Run supabase-media-setup.sql in the Supabase SQL Editor.`;
+      }
+      if (text.includes("bucket") || text.includes("storage") || text.includes("object not found")) {
+        return `Supabase storage is not ready for ${area}. Run supabase-media-setup.sql so the product-media bucket and policies exist.`;
+      }
+      if (text.includes("row-level security") || text.includes("policy") || text.includes("permission")) {
+        return `Supabase blocked ${area}. Make sure you are signed in as an admin and that the RLS policies from supabase-media-setup.sql were applied.`;
+      }
+      return error?.message || `Could not use ${area}. Check Supabase setup.`;
+    }
+    function showJournalSetup(message) {
+      const box = $("journalSetupNotice");
+      const text = $("journalSetupMessage");
+      if (!box || !text) return;
+      text.textContent = message;
+      box.classList.add("show");
+    }
+    function clearJournalSetup() {
+      const box = $("journalSetupNotice");
+      if (box) box.classList.remove("show");
+    }
+    function showProductsSetup(message, danger = false) {
+      const box = $("productsSetupNotice");
+      const text = $("productsSetupMessage");
+      if (!box || !text) return;
+      text.textContent = message;
+      box.classList.toggle("danger", danger);
+      box.classList.add("show");
+    }
+    function clearProductsSetup() {
+      const box = $("productsSetupNotice");
+      if (box) box.classList.remove("show");
+    }
+    function cleanFileName(fileName) {
+      const parts = String(fileName || "upload").split(".");
+      const ext = parts.length > 1 ? "." + parts.pop().toLowerCase().replace(/[^a-z0-9]/g, "") : "";
+      const base = parts.join(".").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "media";
+      return base + ext;
+    }
+    function currentProductFolder() {
+      return slugify($("fSku").value || $("fName").value || $("fId").value || "new-product");
+    }
+    async function uploadMediaFile(file, folder) {
+      if (!sb) throw new Error("Supabase did not load.");
+      const { data: sessionData } = await sb.auth.getSession();
+      if (!sessionData.session) throw new Error("Please sign in before uploading media.");
+      const safeName = cleanFileName(file.name);
+      const path = `${folder}/${Date.now()}-${safeName}`;
+      const { error } = await sb.storage.from(STORAGE_BUCKET).upload(path, file, {
+        cacheControl: "3600",
+        upsert: false
+      });
+      if (error) throw new Error(setupSqlMessage(error, "media uploads"));
+      const { data } = sb.storage.from(STORAGE_BUCKET).getPublicUrl(path);
+      return data.publicUrl;
+    }
+    async function uploadHeroImage() {
+      const file = $("heroUpload").files[0];
+      if (!file) return;
+      try {
+        setUploadStatus("heroUploadStatus", "Uploading...");
+        const url = await uploadMediaFile(file, `${currentProductFolder()}/hero`);
+        $("fImage").value = url;
+        setUploadStatus("heroUploadStatus", "Uploaded. Save product to keep it.");
+        showToast("Hero image uploaded.");
+      } catch (error) {
+        setUploadStatus("heroUploadStatus", "Upload failed.");
+        showToast(error.message || "Hero image upload failed.", true);
+      }
+    }
+    async function uploadGalleryImages() {
+      const files = Array.from($("galleryUpload").files || []);
+      if (!files.length) return;
+      try {
+        setUploadStatus("galleryUploadStatus", `Uploading ${files.length} file${files.length === 1 ? "" : "s"}...`);
+        const urls = [];
+        for (const file of files) {
+          urls.push(await uploadMediaFile(file, `${currentProductFolder()}/gallery`));
+        }
+        const existing = asArray($("fGallery").value);
+        $("fGallery").value = existing.concat(urls).join(", ");
+        setUploadStatus("galleryUploadStatus", "Uploaded. Save product to keep them.");
+        showToast("Gallery images uploaded.");
+      } catch (error) {
+        setUploadStatus("galleryUploadStatus", "Upload failed.");
+        showToast(error.message || "Gallery upload failed.", true);
+      }
+    }
+    async function uploadProductVideo() {
+      const file = $("videoUpload").files[0];
+      if (!file) return;
+      try {
+        setUploadStatus("videoUploadStatus", "Uploading video...");
+        const url = await uploadMediaFile(file, `${currentProductFolder()}/video`);
+        $("fVideo").value = url;
+        setUploadStatus("videoUploadStatus", "Uploaded. Save product to keep it.");
+        showToast("Product video uploaded.");
+      } catch (error) {
+        setUploadStatus("videoUploadStatus", "Upload failed.");
+        showToast(error.message || "Video upload failed.", true);
+      }
+    }
+    function renderSiteAssetControls(values = {}) {
+      $("siteAssetGrid").innerHTML = siteAssetFields.map(([key, label, accept]) => `
+        <article class="media-card">
+          <div style="padding:14px">
+            <strong>${escapeHtml(label)}</strong>
+            <p class="muted">${escapeHtml(key)}</p>
+            <input class="field" id="asset_${escapeHtml(key)}" value="${escapeHtml(values[key] || "")}">
+            <div style="height:8px"></div>
+            <input id="asset_upload_${escapeHtml(key)}" type="file" accept="${escapeHtml(accept)}">
+            <div style="height:8px"></div>
+            <button class="btn btn-primary" data-save-asset="${escapeHtml(key)}">Save Asset</button>
+            <div class="upload-status" id="asset_status_${escapeHtml(key)}"></div>
+          </div>
+        </article>`).join("");
+      siteAssetFields.forEach(([key]) => {
+        $(`asset_upload_${key}`).addEventListener("change", () => uploadSiteAsset(key));
+      });
+      document.querySelectorAll("[data-save-asset]").forEach(btn => btn.addEventListener("click", () => saveSiteAsset(btn.dataset.saveAsset)));
+    }
+    async function loadSiteAssets() {
+      if (!sb) { renderSiteAssetControls(); return; }
+      const { data, error } = await sb.from("site_assets").select("asset_key,url");
+      if (error) { showToast(setupSqlMessage(error, "storefront images"), true); renderSiteAssetControls(); return; }
+      renderSiteAssetControls(Object.fromEntries((data || []).map(item => [item.asset_key, item.url])));
+    }
+    async function uploadSiteAsset(key) {
+      const input = $(`asset_upload_${key}`);
+      const file = input.files[0];
+      if (!file) return;
+      try {
+        setUploadStatus(`asset_status_${key}`, "Uploading...");
+        const url = await uploadMediaFile(file, `site-assets/${key}`);
+        $(`asset_${key}`).value = url;
+        setUploadStatus(`asset_status_${key}`, "Uploaded. Click Save Asset.");
+        showToast("Storefront media uploaded.");
+      } catch (error) {
+        setUploadStatus(`asset_status_${key}`, "Upload failed.");
+        showToast(error.message || "Storefront media upload failed.", true);
+      }
+    }
+    async function saveSiteAsset(key) {
+      if (!sb) { showToast("Supabase did not load.", true); return; }
+      const url = $(`asset_${key}`).value.trim();
+      if (!url) { showToast("Upload or paste a URL first.", true); return; }
+      const { error } = await sb.from("site_assets").upsert({ asset_key: key, url }, { onConflict: "asset_key" });
+      if (error) { showToast(setupSqlMessage(error, "storefront images"), true); return; }
+      setUploadStatus(`asset_status_${key}`, "Saved.");
+      showToast("Storefront asset saved.");
+    }
+    function resetJournalForm() {
+      ["jId","jTitle","jLabel","jSlug","jExcerpt","jHero","jImages","jSections"].forEach(id => $(id).value = "");
+      $("jSort").value = String((state.journals.length || 0) + 1);
+      $("jPublished").checked = true;
+      $("journalFormMode").textContent = "New Journal";
+      $("journalFormPanel").style.display = "block";
+      setUploadStatus("jHeroUploadStatus", "Sets the article card and article hero image.");
+      setUploadStatus("jImagesUploadStatus", "Adds images between article paragraphs.");
+    }
+    async function loadJournals() {
+      if (!sb) { renderJournalRows(); return; }
+      const { data, error } = await sb.from("journal_posts").select("*").order("sort_order", { ascending: true });
+      if (error) {
+        console.error("Journal load error:", error);
+        const message = setupSqlMessage(error, "journal posts");
+        showJournalSetup(message);
+        showToast(message, true);
+        state.journals = [];
+        renderJournalRows();
+        return;
+      }
+      clearJournalSetup();
+      state.journals = data || [];
+      renderJournalRows();
+    }
+    function renderJournalRows() {
+      $("journalBody").innerHTML = state.journals.length ? state.journals.map(post => `<tr><td><strong>${escapeHtml(post.title || "Untitled")}</strong><div class="muted">${escapeHtml(post.slug || "")}</div></td><td>${escapeHtml(post.label || "-")}</td><td><span class="status ${post.published === false ? "draft" : "published"}">${post.published === false ? "Draft" : "Published"}</span></td><td><button class="btn" data-edit-journal="${escapeHtml(post.id)}">Edit</button></td></tr>`).join("") : `<tr><td colspan="4"><div class="empty">No journal posts yet. Add your first editorial story.</div></td></tr>`;
+      document.querySelectorAll("[data-edit-journal]").forEach(btn => btn.addEventListener("click", () => editJournal(btn.dataset.editJournal)));
+    }
+    function editJournal(id) {
+      const post = state.journals.find(item => String(item.id) === String(id));
+      if (!post) return;
+      $("journalFormPanel").style.display = "block";
+      $("journalFormMode").textContent = "Edit Journal";
+      $("jId").value = post.id;
+      $("jTitle").value = post.title || "";
+      $("jLabel").value = post.label || "";
+      $("jSlug").value = post.slug || "";
+      $("jSort").value = post.sort_order || 1;
+      $("jExcerpt").value = post.excerpt || "";
+      $("jHero").value = post.hero_image || "";
+      $("jImages").value = asArray(post.images).join(", ");
+      $("jSections").value = Array.isArray(post.sections) ? post.sections.map(section => Array.isArray(section) ? section.join(" ") : section).join("\n") : "";
+      $("jPublished").checked = post.published !== false;
+    }
+    async function uploadJournalHero() {
+      const file = $("jHeroUpload").files[0];
+      if (!file) return;
+      try {
+        setUploadStatus("jHeroUploadStatus", "Uploading...");
+        const url = await uploadMediaFile(file, `journal/${slugify($("jTitle").value || "post")}/hero`);
+        $("jHero").value = url;
+        setUploadStatus("jHeroUploadStatus", "Uploaded. Save journal to keep it.");
+        showToast("Journal hero uploaded.");
+      } catch (error) {
+        setUploadStatus("jHeroUploadStatus", "Upload failed.");
+        const message = error.message || "Journal hero upload failed.";
+        showJournalSetup(message);
+        showToast(message, true);
+      }
+    }
+    async function uploadJournalImages() {
+      const files = Array.from($("jImagesUpload").files || []);
+      if (!files.length) return;
+      try {
+        setUploadStatus("jImagesUploadStatus", `Uploading ${files.length} file${files.length === 1 ? "" : "s"}...`);
+        const urls = [];
+        for (const file of files) urls.push(await uploadMediaFile(file, `journal/${slugify($("jTitle").value || "post")}/body`));
+        $("jImages").value = asArray($("jImages").value).concat(urls).join(", ");
+        setUploadStatus("jImagesUploadStatus", "Uploaded. Save journal to keep them.");
+        showToast("Journal images uploaded.");
+      } catch (error) {
+        setUploadStatus("jImagesUploadStatus", "Upload failed.");
+        const message = error.message || "Journal image upload failed.";
+        showJournalSetup(message);
+        showToast(message, true);
+      }
+    }
+    async function saveJournal() {
+      if (!sb) { showToast("Supabase did not load.", true); return; }
+      const id = $("jId").value;
+      const payload = {
+        title: $("jTitle").value.trim(),
+        slug: slugify($("jSlug").value || $("jTitle").value),
+        label: $("jLabel").value.trim() || "The Nuvelle Journal",
+        excerpt: $("jExcerpt").value.trim(),
+        hero_image: $("jHero").value.trim(),
+        images: asArray($("jImages").value),
+        sections: $("jSections").value.split(/\n+/).map(line => line.trim()).filter(Boolean).map(line => [line]),
+        sort_order: Number($("jSort").value || 1),
+        published: $("jPublished").checked
+      };
+      if (!payload.title) { showToast("Journal title is required.", true); return; }
+      let result;
+      if (id) result = await sb.from("journal_posts").update(payload).eq("id", id);
+      else result = await sb.from("journal_posts").insert([payload]);
+      if (result.error) {
+        const message = setupSqlMessage(result.error, "journal posts");
+        showJournalSetup(message);
+        showToast(message, true);
+        return;
+      }
+      clearJournalSetup();
+      showToast("Journal saved.");
+      $("journalFormPanel").style.display = "none";
+      loadJournals();
+    }
+    function setupCategories() {
+      $("categoryFilter").innerHTML = categories.map(c => `<option value="${c[0]}">${c[1]}</option>`).join("");
+      $("fCategory").innerHTML = categories.filter(c => c[0] !== "all").map(c => `<option value="${c[0]}">${c[1]}</option>`).join("");
+    }
+    function setAuthed(session) {
+      $("loginScreen").classList.toggle("hidden", !!session);
+      $("appShell").classList.toggle("hidden", !session);
+      $("userEmail").textContent = session?.user?.email || "Not signed in";
+      if (session) refreshAll();
+    }
+    async function refreshAll() {
+      if (!sb) { showToast("Supabase client did not load. Check the CDN script or bundle Supabase locally.", true); return; }
+      await Promise.allSettled([loadProducts(), loadOrders(), loadCustomers()]);
+      renderDashboard();
+      if (state.page === "products") renderProducts();
+      if (state.page === "media") renderMedia();
+    }
+    async function loadProducts() {
+      const { data, error } = await sb.from("products").select("*").order("created_at", { ascending: false });
+      if (error) {
+        console.error("Products load error:", error);
+        const message = setupSqlMessage(error, "products");
+        showProductsSetup(message, true);
+        showToast("Products could not load: " + (error.message || message), true);
+        state.products = [];
+        renderProducts();
+        renderMedia();
+        return;
+      }
+      state.products = data || [];
+      if (!state.products.length) showProductsSetup("No product rows were returned from Supabase. Check the products table count in Supabase Table Editor or SQL Editor.", true);
+      else clearProductsSetup();
+      renderProducts();
+      renderMedia();
+    }
+    async function loadOrders() {
+      const { data, error } = await sb.from("orders").select("*").order("created_at", { ascending: false });
+      if (error) { state.orders = []; return; }
+      state.orders = data || [];
+      renderOrders();
+    }
+    async function loadCustomers() {
+      const { data, error } = await sb.from("customers").select("*").order("created_at", { ascending: false });
+      if (error) { state.customers = []; return; }
+      state.customers = data || [];
+      renderCustomers();
+    }
+    function switchPage(page) {
+      state.page = page;
+      document.querySelectorAll(".page").forEach(el => el.classList.toggle("active", el.id === "page-" + page));
+      document.querySelectorAll("#nav button").forEach(el => el.classList.toggle("active", el.dataset.page === page));
+      $("pageTitle").textContent = ({ dashboard: "Dashboard", products: "Products", media: "Media", journal: "Journal", orders: "Orders", customers: "Customers", settings: "Settings", "product-form": "Product Editor" })[page] || page;
+      if (page === "dashboard") renderDashboard();
+      if (page === "products") renderProducts();
+      if (page === "media") renderMedia();
+      if (page === "settings") loadSiteAssets();
+      if (page === "journal") loadJournals();
+    }
+    function renderDashboard() {
+      const published = state.products.filter(p => p.published !== false).length;
+      const revenue = state.orders.reduce((sum, order) => sum + Number(order.total || 0), 0);
+      $("statProducts").textContent = state.products.length;
+      $("statPublished").textContent = published;
+      $("statOrders").textContent = state.orders.length;
+      $("statRevenue").textContent = money(revenue);
+      const checks = [
+        { text: "Products saved here can feed the Supabase-connected store page.", tone: "good", status: "Ready" },
+        { text: "Hero images, gallery images, and product videos can upload directly from this admin.", tone: "good", status: "Ready" },
+        { text: "Only products marked Published will appear on the storefront.", tone: "good", status: "Ready" },
+        { text: "Run the media setup SQL once so uploads can save to the product-media bucket.", tone: "warn", status: "Setup" },
+        { text: "Use the new admin page to manage clearance, ZIP delivery, orders, and customer care.", tone: "good", status: "Ready" }
+      ];
+      $("launchList").innerHTML = checks.map(item => `<div class="launch-item"><span class="dot ${item.tone === "good" ? "good" : item.tone === "bad" ? "bad" : ""}"></span><div>${escapeHtml(item.text)}</div><span class="status">${escapeHtml(item.status)}</span></div>`).join("");
+      const recent = state.products.slice(0, 6);
+      $("recentProducts").innerHTML = recent.length ? recent.map(p => `<div style="display:flex;justify-content:space-between;gap:14px;padding:12px 0;border-top:1px solid var(--line)"><div><strong>${escapeHtml(p.name)}</strong><div class="muted">${escapeHtml(p.sku || "-")} / ${escapeHtml(categoryLabel(p.category))}</div></div><strong>${money(p.price)}</strong></div>`).join("") : `<div class="empty">No products loaded yet.</div>`;
+    }
+    function productImage(p) {
+      if (p.image_url) return p.image_url;
+      const images = asArray(p.images || p.gallery_images);
+      return images[0] || "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=900&q=80";
+    }
+    function filteredProducts() {
+      const q = state.search.toLowerCase().trim();
+      return state.products.filter(p => {
+        const categoryOk = state.category === "all" || normalizeCategory(p.category) === state.category || p.category === categoryLabel(state.category);
+        const haystack = [p.name, p.sku, p.materials, p.delivery, p.description, p.colors, p.features].join(" ").toLowerCase();
+        return categoryOk && (!q || haystack.includes(q));
+      });
+    }
+    function renderProducts() {
+      const list = filteredProducts();
+      $("productsBody").innerHTML = list.length ? list.map(p => `
+        <tr>
+          <td><img class="thumb" src="${escapeHtml(productImage(p))}" alt=""></td>
+          <td><strong>${escapeHtml(p.name || "Untitled product")}</strong><div class="sku">${escapeHtml(p.sku || "-")}</div></td>
+          <td><strong>${money(p.price)}</strong></td>
+          <td>${escapeHtml(categoryLabel(p.category))}</td>
+          <td><span class="status ${p.published === false ? "draft" : "published"}">${p.published === false ? "Draft" : "Published"}</span></td>
+          <td><button class="btn" data-edit="${escapeHtml(p.id)}">Edit</button> <button class="btn btn-danger" data-delete="${escapeHtml(p.id)}">Delete</button></td>
+        </tr>`).join("") : `<tr><td colspan="6"><div class="empty">No products found.</div></td></tr>`;
+      $("productsCount").textContent = `Showing ${list.length} of ${state.products.length} products`;
+      document.querySelectorAll("[data-edit]").forEach(btn => btn.addEventListener("click", () => openProductForm(btn.dataset.edit)));
+      document.querySelectorAll("[data-delete]").forEach(btn => btn.addEventListener("click", () => deleteProduct(btn.dataset.delete)));
+    }
+    function renderMedia() {
+      const cards = [];
+      state.products.forEach(p => {
+        const image = productImage(p);
+        if (image) cards.push({ type: "image", src: image, name: p.name, meta: "Hero image" });
+        asArray(p.gallery_images || p.images).slice(1).forEach(src => cards.push({ type: "image", src, name: p.name, meta: "Gallery image" }));
+        if (p.video_url) cards.push({ type: "video", src: p.video_url, name: p.name, meta: "Product video" });
+      });
+      $("mediaGrid").innerHTML = cards.length ? cards.map(card => `<article class="media-card">${card.type === "video" ? `<video src="${escapeHtml(card.src)}" muted controls></video>` : `<img src="${escapeHtml(card.src)}" alt="">`}<div><strong>${escapeHtml(card.name || "Untitled")}</strong><p class="muted">${escapeHtml(card.meta)}</p></div></article>`).join("") : `<div class="empty" style="grid-column:1/-1">No media yet. Add image and video URLs on products.</div>`;
+    }
+    function renderOrders() {
+      $("ordersBody").innerHTML = state.orders.length ? state.orders.map(o => `<tr><td class="sku">#${escapeHtml(String(o.id || "").slice(0, 8))}</td><td><strong>${escapeHtml(o.customer_name || "-")}</strong><div class="muted">${escapeHtml(o.customer_email || "")}</div></td><td><strong>${money(o.total)}</strong></td><td><span class="status">${escapeHtml(o.status || "Pending")}</span></td><td>${escapeHtml(o.created_at ? new Date(o.created_at).toLocaleDateString() : "-")}</td></tr>`).join("") : `<tr><td colspan="5"><div class="empty">No orders yet.</div></td></tr>`;
+    }
+    function renderCustomers() {
+      $("customersBody").innerHTML = state.customers.length ? state.customers.map(c => `<tr><td><strong>${escapeHtml(c.name || "-")}</strong></td><td>${escapeHtml(c.email || "-")}</td><td>${Number(c.total_orders || 0)}</td><td><strong>${money(c.total_spend)}</strong></td></tr>`).join("") : `<tr><td colspan="4"><div class="empty">No customers yet.</div></td></tr>`;
+    }
+    function resetProductForm() {
+      ["fId","fSku","fPrice","fName","fMaterials","fDimensions","fColors","fFeatures","fImage","fGallery","fVideo","fDescription","fDelivery"].forEach(id => $(id).value = "");
+      ["heroUpload","galleryUpload","videoUpload"].forEach(id => { if ($(id)) $(id).value = ""; });
+      setUploadStatus("heroUploadStatus", "Sets the main store image.");
+      setUploadStatus("galleryUploadStatus", "Adds extra images to the product.");
+      setUploadStatus("videoUploadStatus", "Sets the optional video URL.");
+      $("fCategory").value = "living-room";
+      $("fInStock").checked = true;
+      $("fFeatured").checked = false;
+      $("fPublished").checked = true;
+      $("formMode").textContent = "New Product";
+      $("formHeading").textContent = "Add Product";
+    }
+    function openProductForm(id) {
+      resetProductForm();
+      if (id) {
+        const p = state.products.find(item => String(item.id) === String(id));
+        if (!p) return;
+        $("fId").value = p.id;
+        $("fSku").value = p.sku || "";
+        $("fPrice").value = p.price || "";
+        $("fName").value = p.name || "";
+        $("fCategory").value = normalizeCategory(p.category);
+        $("fMaterials").value = p.materials || "";
+        $("fDimensions").value = p.dimensions || "";
+        $("fColors").value = asArray(p.colors).join(", ");
+        $("fFeatures").value = asArray(p.features).join(", ");
+        $("fImage").value = p.image_url || productImage(p);
+        $("fGallery").value = asArray(p.gallery_images || p.images).join(", ");
+        $("fVideo").value = p.video_url || "";
+        $("fDescription").value = p.description || "";
+        $("fDelivery").value = p.delivery || "";
+        $("fInStock").checked = p.in_stock !== false;
+        $("fFeatured").checked = !!p.featured;
+        $("fPublished").checked = p.published !== false;
+        $("formMode").textContent = "Edit Product";
+        $("formHeading").textContent = p.name || "Edit Product";
+      }
+      switchPage("product-form");
+    }
+    async function saveProduct() {
+      const id = $("fId").value;
+      const image = $("fImage").value.trim();
+      const gallery = asArray($("fGallery").value);
+      const payload = {
+        sku: $("fSku").value.trim(),
+        name: $("fName").value.trim(),
+        price: Number($("fPrice").value || 0),
+        category: $("fCategory").value,
+        materials: $("fMaterials").value.trim(),
+        dimensions: $("fDimensions").value.trim(),
+        colors: asArray($("fColors").value),
+        features: asArray($("fFeatures").value),
+        image_url: image,
+        gallery_images: gallery.length ? gallery : (image ? [image] : []),
+        video_url: $("fVideo").value.trim(),
+        description: $("fDescription").value.trim(),
+        delivery: $("fDelivery").value.trim(),
+        in_stock: $("fInStock").checked,
+        featured: $("fFeatured").checked,
+        published: $("fPublished").checked
+      };
+      if (!payload.name) { showToast("Product name is required.", true); return; }
+      let result;
+      if (id) result = await sb.from("products").update(payload).eq("id", id);
+      else result = await sb.from("products").insert([payload]);
+      if (result.error) { showToast(result.error.message, true); return; }
+      showToast(id ? "Product updated." : "Product created.");
+      await loadProducts();
+      renderDashboard();
+      switchPage("products");
+    }
+    async function deleteProduct(id) {
+      const p = state.products.find(item => String(item.id) === String(id));
+      if (!confirm(`Delete "${p?.name || "this product"}"? This cannot be undone.`)) return;
+      const { error } = await sb.from("products").delete().eq("id", id);
+      if (error) { showToast(error.message, true); return; }
+      showToast("Product deleted.");
+      await loadProducts();
+      renderDashboard();
+    }
+    function exportCsv() {
+      const headers = ["sku","name","price","category","materials","dimensions","delivery","image_url","video_url","published"];
+      const lines = [headers.join(",")].concat(state.products.map(p => headers.map(h => `"${String(p[h] ?? "").replace(/"/g, '""')}"`).join(",")));
+      const blob = new Blob([lines.join("\n")], { type: "text/csv" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "nuvelle-products.csv";
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+    function saveLocalSettings() {
+      const settings = {
+        storeName: $("storeName").value,
+        storeEmail: $("storeEmail").value,
+        storePhone: $("storePhone").value,
+        storeLocation: $("storeLocation").value,
+        storeVideo: $("storeVideo").value
+      };
+      localStorage.setItem("nuvelle-admin-settings", JSON.stringify(settings));
+      showToast("Settings saved locally.");
+    }
+    function loadLocalSettings() {
+      try {
+        const settings = JSON.parse(localStorage.getItem("nuvelle-admin-settings") || "{}");
+        Object.entries(settings).forEach(([key, value]) => { if ($(key)) $(key).value = value; });
+      } catch {}
+    }
+    $("loginForm").addEventListener("submit", async (event) => {
+      event.preventDefault();
+      $("loginError").classList.add("hidden");
+      if (!sb) {
+        $("loginError").textContent = "Supabase did not load. Check your internet/CDN access or bundle Supabase with the app.";
+        $("loginError").classList.remove("hidden");
+        return;
+      }
+      const { data, error } = await sb.auth.signInWithPassword({ email: $("loginEmail").value.trim(), password: $("loginPassword").value });
+      if (error) {
+        $("loginError").textContent = "Invalid login. Create this user in Supabase Auth or use the correct admin credentials.";
+        $("loginError").classList.remove("hidden");
+        return;
+      }
+      setAuthed(data.session);
+    });
+    $("logoutBtn").addEventListener("click", async () => { await sb.auth.signOut(); setAuthed(null); });
+    $("refreshBtn").addEventListener("click", refreshAll);
+    $("productSearch").addEventListener("input", event => { state.search = event.target.value; renderProducts(); });
+    $("categoryFilter").addEventListener("change", event => { state.category = event.target.value; renderProducts(); });
+    $("saveProductBtn").addEventListener("click", saveProduct);
+    $("cancelProductBtn").addEventListener("click", () => switchPage("products"));
+    $("heroUpload").addEventListener("change", uploadHeroImage);
+    $("galleryUpload").addEventListener("change", uploadGalleryImages);
+    $("videoUpload").addEventListener("change", uploadProductVideo);
+    $("exportBtn").addEventListener("click", exportCsv);
+    $("saveSettingsBtn").addEventListener("click", saveLocalSettings);
+    $("newJournalBtn").addEventListener("click", resetJournalForm);
+    $("refreshJournalBtn").addEventListener("click", loadJournals);
+    $("saveJournalBtn").addEventListener("click", saveJournal);
+    $("cancelJournalBtn").addEventListener("click", () => $("journalFormPanel").style.display = "none");
+    $("jHeroUpload").addEventListener("change", uploadJournalHero);
+    $("jImagesUpload").addEventListener("change", uploadJournalImages);
+    document.querySelectorAll("[data-open-product]").forEach(btn => btn.addEventListener("click", () => openProductForm()));
+    document.querySelectorAll("[data-page-shortcut]").forEach(btn => btn.addEventListener("click", () => switchPage(btn.dataset.pageShortcut)));
+    document.querySelectorAll("#nav button").forEach(btn => btn.addEventListener("click", () => switchPage(btn.dataset.page)));
+    setupCategories();
+    loadLocalSettings();
+    if (sb) {
+      sb.auth.getSession().then(({ data }) => setAuthed(data.session));
+    } else {
+      $("loginError").textContent = "Supabase did not load. Check your internet/CDN access or bundle Supabase with the app.";
+      $("loginError").classList.remove("hidden");
+      setAuthed(null);
+    }
+  </script>
+</body>
+</html>
